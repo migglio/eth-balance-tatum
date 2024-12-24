@@ -1,0 +1,17 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+!.env.sample
+/packages/ui/.env
+/packages/api/.env
+
+.serverless
+
+.vscode
