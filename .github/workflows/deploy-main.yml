@@ -1,0 +1,48 @@
+name: Deploy Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup pnpm
+        run: |
+          npm install -g pnpm
+          pnpm --version
+
+      - name: Install
+        run: pnpm --filter=@tatum/api install --shamefully-hoist
+
+      - name: Build Api
+        run: pnpm --filter=@tatum/api run build
+
+      - name: Deploy Api
+        uses: serverless/github-action@v3.2
+        with:
+          args: deploy --stage main -c serverless-api.yml
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Install
+        run: pnpm install
+        
+      - name: Build UI
+        run: pnpm --filter=@tatum/ui run build:main
+
+      - name: Deploy UI
+        uses: serverless/github-action@v3.2
+        with:
+          args: deploy --stage main -c serverless-ui.yml
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
